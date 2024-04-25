@@ -1,0 +1,12 @@
+
+Assignment submissions are handled by Gradescope. You will need an MIT gradescope account. See Piazza for the entry code to join the class. Use this link if you need more help joining.
+
+When you're ready to submit, run make zipball, which will generate lab.zip. Upload this zip file to the corresponding Gradescope assignment.
+
+If you run make zipball and you have either uncomitted changes or untracked files, you will see output similar to the following:
+
+ M hello.c
+?? bar.c
+?? foo.pyc
+Untracked files will not be handed in.  Continue? [y/N]
+Inspect the above lines and make sure all files that you
