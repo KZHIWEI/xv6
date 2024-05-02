@@ -1,0 +1,21 @@
+1.
+    a* hold arguments to functions, a2 hold 13 in main's
+
+2.
+    it don't call to function f in main, compiler pre-calculated it. so as call to g, compiler inline the function in f.
+
+3.
+    at 628
+
+4.
+    38
+
+5.
+    HE110 World
+    dlr
+    set to 0x726c6400
+    we don't
+
+6.
+    y=1
+    the value of register a2 is 1.
