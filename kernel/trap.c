@@ -29,6 +29,41 @@ trapinithart(void)
   w_stvec((uint64)kernelvec);
 }
 
+void save_hframe(struct proc *p) {
+  p->hf.ra = p->trapframe->ra;
+  p->hf.sp = p->trapframe->sp;
+  p->hf.gp = p->trapframe->gp;
+  p->hf.tp = p->trapframe->tp;
+  p->hf.t0 = p->trapframe->t0;
+  p->hf.t1 = p->trapframe->t1;
+  p->hf.t2 = p->trapframe->t2;
+  p->hf.s0 = p->trapframe->s0;
+  p->hf.a0 = p->trapframe->a0;
+  p->hf.a1 = p->trapframe->a1;
+  p->hf.a2 = p->trapframe->a2;
+  p->hf.a3 = p->trapframe->a3;
+  p->hf.a4 = p->trapframe->a4;
+  p->hf.a5 = p->trapframe->a5;
+  p->hf.a6 = p->trapframe->a6;
+  p->hf.a7 = p->trapframe->a7;
+  p->hf.s1 = p->trapframe->s1;
+  p->hf.s2 = p->trapframe->s2;
+  p->hf.s3 = p->trapframe->s3;
+  p->hf.s4 = p->trapframe->s4;
+  p->hf.s5 = p->trapframe->s5;
+  p->hf.s6 = p->trapframe->s6;
+  p->hf.s7 = p->trapframe->s7;
+  p->hf.s8 = p->trapframe->s8;
+  p->hf.s9 = p->trapframe->s9;
+  p->hf.s10 = p->trapframe->s10;
+  p->hf.s11 = p->trapframe->s11;
+  p->hf.t3 = p->trapframe->t3;
+  p->hf.t4 = p->trapframe->t4;
+  p->hf.t5 = p->trapframe->t5;
+  p->hf.t6 = p->trapframe->t6;
+
+  p->hf.epc = p->trapframe->epc;
+}
 //
 // handle an interrupt, exception, or system call from user space.
 // called from trampoline.S
@@ -70,6 +105,7 @@ usertrap(void)
   } else {
     printf("usertrap(): unexpected scause %p pid=%d\n", r_scause(), p->pid);
     printf("            sepc=%p stval=%p\n", r_sepc(), r_stval());
+    // backtrace();
     p->killed = 1;
   }
 
@@ -78,13 +114,16 @@ usertrap(void)
 
   // give up the CPU if this is a timer interrupt.
   if (which_dev == 2) {
-    if (p->ticks != 0) {
-      p->ticked++;
-      if (p->ticked == p->ticks - 1) {
+    p->ticked++;
+    if (p->ticks != 0 && !p->handler_running) {
+      if (p->ticked >= p->ticks - 1) {
+        save_hframe(p);
         p->trapframe->epc = p->handler;
+        p->handler_running = 1;
         p->ticked = 0;
       }
     }
+    yield();
   }
   // yield();
 

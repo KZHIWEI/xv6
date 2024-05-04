@@ -100,7 +100,6 @@ sys_uptime(void)
 
 uint64 sys_sigalarm(void) {
   int ticks;
-  // void (*handler)();
   uint64 handler;
   if (argint(0, &ticks) < 0) return -1;
   if (argaddr(1, &handler) < 0) return -1;
@@ -110,4 +109,46 @@ uint64 sys_sigalarm(void) {
   p->ticks = ticks;
   return 0;
 }
-uint64 sys_sigreturn(void) { return 0; }
+
+void restore_hframe(struct proc *p) {
+  p->trapframe->ra = p->hf.ra;
+  p->trapframe->sp = p->hf.sp;
+  p->trapframe->gp = p->hf.gp;
+  p->trapframe->tp = p->hf.tp;
+  p->trapframe->t0 = p->hf.t0;
+  p->trapframe->t1 = p->hf.t1;
+  p->trapframe->t2 = p->hf.t2;
+  p->trapframe->s0 = p->hf.s0;
+  p->trapframe->s1 = p->hf.s1;
+  p->trapframe->a0 = p->hf.a0;
+  p->trapframe->a1 = p->hf.a1;
+  p->trapframe->a2 = p->hf.a2;
+  p->trapframe->a3 = p->hf.a3;
+  p->trapframe->a4 = p->hf.a4;
+  p->trapframe->a5 = p->hf.a5;
+  p->trapframe->a6 = p->hf.a6;
+  p->trapframe->a7 = p->hf.a7;
+  p->trapframe->s2 = p->hf.s2;
+  p->trapframe->s3 = p->hf.s3;
+  p->trapframe->s4 = p->hf.s4;
+  p->trapframe->s5 = p->hf.s5;
+  p->trapframe->s6 = p->hf.s6;
+  p->trapframe->s7 = p->hf.s7;
+  p->trapframe->s8 = p->hf.s8;
+  p->trapframe->s9 = p->hf.s9;
+  p->trapframe->s10 = p->hf.s10;
+  p->trapframe->s11 = p->hf.s11;
+  p->trapframe->t3 = p->hf.t3;
+  p->trapframe->t4 = p->hf.t4;
+  p->trapframe->t5 = p->hf.t5;
+  p->trapframe->t6 = p->hf.t6;
+
+  p->trapframe->epc = p->hf.epc;
+}
+uint64 sys_sigreturn(void) {
+  struct proc *p = myproc();
+  restore_hframe(p);
+  p->handler_running = 0;
+  p->ticked = 0;
+  return p->hf.a0;
+}
