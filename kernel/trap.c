@@ -49,12 +49,12 @@ usertrap(void)
   
   // save user program counter.
   p->trapframe->epc = r_sepc();
-  
-  if(r_scause() == 8){
+
+  uint64 cause = r_scause();
+  if (cause == 8) {
     // system call
 
-    if(p->killed)
-      exit(-1);
+    if (p->killed) exit(-1);
 
     // sepc points to the ecall instruction,
     // but we want to return to the next instruction.
@@ -65,7 +65,18 @@ usertrap(void)
     intr_on();
 
     syscall();
-  } else if((which_dev = devintr()) != 0){
+  } else if (cause == 15) {
+    uint64 va = r_stval();
+    if (va > p->sz) {
+      p->killed = 1;
+    }
+    if (walkcowalloc(p->pagetable, va) != 0) {
+      printf("usertrap(): unexpected scause %p pid=%d\n", r_scause(), p->pid);
+      printf("            sepc=%p stval=%p\n", r_sepc(), r_stval());
+      p->killed = 1;
+    }
+
+  } else if ((which_dev = devintr()) != 0) {
     // ok
   } else {
     printf("usertrap(): unexpected scause %p pid=%d\n", r_scause(), p->pid);
