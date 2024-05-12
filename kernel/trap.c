@@ -71,8 +71,8 @@ usertrap(void)
       p->killed = 1;
     }
     if (walkcowalloc(p->pagetable, va) != 0) {
-      printf("usertrap(): unexpected scause %p pid=%d\n", r_scause(), p->pid);
-      printf("            sepc=%p stval=%p\n", r_sepc(), r_stval());
+      // printf("usertrap(): unexpected scause %p pid=%d\n", r_scause(),
+      // p->pid); printf("            sepc=%p stval=%p\n", r_sepc(), r_stval());
       p->killed = 1;
     }
 

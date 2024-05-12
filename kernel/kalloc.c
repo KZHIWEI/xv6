@@ -29,19 +29,6 @@ struct spinlock ref_c_lock;
 void kinit() {
   initlock(&kmem.lock, "kmem");
   initlock(&ref_c_lock, "ref_c");
-  // uint64 pl = PHYSTOP - PGROUNDUP((uint64)end);
-  // printf("pl %d\n", pl);
-  // int pn = PGROUNDUP(pl) / PGSIZE;
-  // printf("pn %d\n", pn);
-
-  // refend = PGROUNDUP(pn * sizeof(int));
-  // printf("sz %d\n", sizeof(int));
-  // printf("PS  %p\n", PHYSTOP);
-  // printf("PHS %p\n", PHYSTOP - refend);
-  // pageref = (int *)(PHYSTOP - refend);
-
-  // memset(pageref, 0, refend);
-  // printf("PR  %p\n", pageref);
 
   freerange(end, (void *)(PHYSTOP));
 }

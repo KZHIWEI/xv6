@@ -356,7 +356,6 @@ int walkcowalloc(pagetable_t ptbl, uint64 va) {
 
   mem = kalloc();
   if (mem == 0) {
-    panic("not enough address");
     return -1;
   }
   flags = PTE_FLAGS(*pte);
