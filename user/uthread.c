@@ -61,8 +61,6 @@ thread_schedule(void)
       t = all_thread;
     if(t->state == RUNNABLE) {
       next_thread = t;
-      printf("0: %d, 1: %d, 2: %d, 3: %d\n", all_thread[0].state,
-             all_thread[1].state, all_thread[2].state, all_thread[3].state);
       break;
     }
     t = t + 1;
@@ -95,9 +93,9 @@ thread_create(void (*func)())
     if (t->state == FREE) break;
   }
   t->state = RUNNABLE;
-  t->sp = (uint64)(t->stack);
-  t->ra = (uint64)func;
   // YOUR CODE HERE
+  t->sp = (uint64)(t->stack + STACK_SIZE);
+  t->ra = (uint64)func;
 }
 
 void 
