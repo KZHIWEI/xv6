@@ -7,11 +7,28 @@
 #define RUNNING     0x1
 #define RUNNABLE    0x2
 
-#define STACK_SIZE  8192
+#define STACK_SIZE 8192
 #define MAX_THREAD  4
 
 
 struct thread {
+  // callee-saved
+  uint64 s0;
+  uint64 s1;
+  uint64 s2;
+  uint64 s3;
+  uint64 s4;
+  uint64 s5;
+  uint64 s6;
+  uint64 s7;
+  uint64 s8;
+  uint64 s9;
+  uint64 s10;
+  uint64 s11;
+
+  uint64 sp;
+  uint64 ra;
+
   char       stack[STACK_SIZE]; /* the thread's stack */
   int        state;             /* FREE, RUNNING, RUNNABLE */
 };
@@ -44,6 +61,8 @@ thread_schedule(void)
       t = all_thread;
     if(t->state == RUNNABLE) {
       next_thread = t;
+      printf("0: %d, 1: %d, 2: %d, 3: %d\n", all_thread[0].state,
+             all_thread[1].state, all_thread[2].state, all_thread[3].state);
       break;
     }
     t = t + 1;
@@ -53,8 +72,7 @@ thread_schedule(void)
     printf("thread_schedule: no runnable threads\n");
     exit(-1);
   }
-
-  if (current_thread != next_thread) {         /* switch threads?  */
+  if (current_thread != next_thread) { /* switch threads? */
     next_thread->state = RUNNING;
     t = current_thread;
     current_thread = next_thread;
@@ -62,6 +80,8 @@ thread_schedule(void)
      * Invoke thread_switch to switch from t to next_thread:
      * thread_switch(??, ??);
      */
+    // t->state = RUNNABLE;
+    thread_switch((uint64)t, (uint64)next_thread);
   } else
     next_thread = 0;
 }
@@ -75,6 +95,8 @@ thread_create(void (*func)())
     if (t->state == FREE) break;
   }
   t->state = RUNNABLE;
+  t->sp = (uint64)(t->stack);
+  t->ra = (uint64)func;
   // YOUR CODE HERE
 }
 
