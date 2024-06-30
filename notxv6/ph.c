@@ -16,7 +16,7 @@ struct entry {
 struct entry *table[NBUCKET];
 int keys[NKEYS];
 int nthread = 1;
-
+pthread_mutex_t *mux[NBUCKET];
 
 double
 now()
@@ -40,7 +40,11 @@ static
 void put(int key, int value)
 {
   int i = key % NBUCKET;
-
+  int val = pthread_mutex_lock(mux[i]);
+  if (val != 0) {
+    printf("lock mutex[%d] fail: %d", i, val);
+    exit(-1);
+  }
   // is the key already present?
   struct entry *e = 0;
   for (e = table[i]; e != 0; e = e->next) {
@@ -54,7 +58,11 @@ void put(int key, int value)
     // the new is new.
     insert(key, value, &table[i], table[i]);
   }
-
+  val = pthread_mutex_unlock(mux[i]);
+  if (val != 0) {
+    printf("unlock mutex[%d] fail: %d", i, val);
+    exit(-1);
+  }
 }
 
 static struct entry*
@@ -62,12 +70,22 @@ get(int key)
 {
   int i = key % NBUCKET;
 
+  int val = pthread_mutex_lock(mux[i]);
+  if (val != 0) {
+    printf("lock mutex[%d] fail: %d", i, val);
+    exit(-1);
+  }
 
   struct entry *e = 0;
   for (e = table[i]; e != 0; e = e->next) {
     if (e->key == key) break;
   }
 
+  val = pthread_mutex_unlock(mux[i]);
+  if (val != 0) {
+    printf("unlock mutex[%d] fail: %d", i, val);
+    exit(-1);
+  }
   return e;
 }
 
@@ -110,6 +128,15 @@ main(int argc, char *argv[])
     fprintf(stderr, "Usage: %s nthreads\n", argv[0]);
     exit(-1);
   }
+  for (int i = 0; i < NBUCKET; i++) {
+    mux[i] = malloc(sizeof(pthread_mutex_t));
+    int val = (pthread_mutex_init(mux[i], NULL));
+    if (val != 0) {
+      printf("init mutex fail: %d", val);
+      exit(-1);
+    }
+  }
+
   nthread = atoi(argv[1]);
   tha = malloc(sizeof(pthread_t) * nthread);
   srandom(0);
@@ -147,4 +174,12 @@ main(int argc, char *argv[])
 
   printf("%d gets, %.3f seconds, %.0f gets/second\n",
          NKEYS*nthread, t1 - t0, (NKEYS*nthread) / (t1 - t0));
+
+  for (int i = 0; i < 5; i++) {
+    int val = pthread_mutex_destroy(mux[i]);
+    if (val != 0) {
+      printf("destroy mutex fail: %d", val);
+      exit(-1);
+    }
+  }
 }
